@@ -1,0 +1,291 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Ledger — Assignment Tracker</title>
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link href="https://fonts.googleapis.com/css2?family=Fraunces:opsz,wght@9..144,400;9..144,600;9..144,700&family=Work+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500;600&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="css/style.css">
+<link rel="stylesheet" href="css/dashboard.css">
+<link rel="stylesheet" href="css/responsive.css">
+
+<script src="dashboard.js"></script>
+<script src="filter.js"></script>
+<script src="calender.js"></script>
+<script src="storage.js"></script>
+<script src="app.js"></script>
+<script src="responsive.js"></script>
+</head>
+<body>
+
+<!-- ===== Sidebar / Ruler Navigation ===== -->
+<aside class="ruler-nav">
+  <div class="ruler-brand">
+    <span class="ruler-brand-mark">✎</span>
+    <span class="ruler-brand-text">Ledger</span>
+  </div>
+  <nav class="ruler-ticks">
+    <button class="tick active" data-view="dashboard"><span class="tick-mark">01</span><span class="tick-label">Dashboard</span></button>
+    <button class="tick" data-view="add"><span class="tick-mark">02</span><span class="tick-label">Add</span></button>
+    <button class="tick" data-view="list"><span class="tick-mark">03</span><span class="tick-label">Assignments</span></button>
+    <button class="tick" data-view="calendar"><span class="tick-mark">04</span><span class="tick-label">Calendar</span></button>
+    <button class="tick" data-view="stats"><span class="tick-mark">05</span><span class="tick-label">Statistics</span></button>
+    <button class="tick" data-view="reminders"><span class="tick-mark">06</span><span class="tick-label">Reminders</span></button>
+  </nav>
+
+  
+  <button class="theme-toggle" id="themeToggle" title="Toggle dark mode" anim="shake">
+    <span class="theme-icon">☾</span><span class="theme-text">Chalkboard</span>
+  </button>
+</aside>
+
+<!-- ===== Mobile top bar ===== -->
+<header class="mobile-bar">
+  <div class="ruler-brand">
+    <span class="ruler-brand-mark">✎</span>
+    <span class="ruler-brand-text">Ledger</span>
+  </div>
+  <button class="mobile-menu-btn" id="mobileMenuBtn">☰</button>
+</header>
+
+<main class="stage">
+
+  <!-- ===== DASHBOARD VIEW ===== -->
+  <section class="view active" id="view-dashboard">
+    
+    
+    <div class="welcome-card">
+      <p class="eyebrow">Today is <span id="todayDate"></span></p>
+      <h1 class="welcome-title">Welcome back, <span id="studentGreetName">scholar</span>.</h1>
+      <p class="welcome-sub" id="welcomeSub">Here's where things stand.</p>
+
+    </div>
+    
+
+    <div class="stat-row">
+      <div class="stat-card stamp-total">
+        <span class="stat-number" id="statTotal">0</span>
+        <span class="stat-label">Total Assignments</span>
+      </div>
+      <div class="stat-card stamp-complete">
+        <span class="stat-number" id="statCompleted">0</span>
+        <span class="stat-label">Completed</span>
+      </div>
+      <div class="stat-card stamp-pending">
+        <span class="stat-number" id="statPending">0</span>
+        <span class="stat-label">Pending</span>
+      </div>
+      <div class="stat-card stamp-overdue">
+        <span class="stat-number" id="statOverdue">0</span>
+        <span class="stat-label">Overdue</span>
+      </div>
+    </div>
+
+    <div class="progress-block">
+      <div class="progress-block-head">
+        <span>Overall completion</span>
+        <span id="progressPercentLabel">0%</span>
+      </div>
+      <div class="progress-track">
+        <div class="progress-fill" id="dashboardProgressFill"></div>
+      </div>
+    </div>
+
+    <div class="upcoming-block">
+      <h2 class="section-heading">Upcoming Deadlines</h2>
+      <div class="card-list" id="upcomingList">
+        <!-- populated by JS -->
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== ADD ASSIGNMENT VIEW ===== -->
+  <section class="view" id="view-add">
+    <h2 class="section-heading">New Entry</h2>
+    <p class="section-sub">Log an assignment into the ledger.</p>
+
+    <form class="entry-form" id="assignmentForm">
+      <input type="hidden" id="editingId" value="">
+
+      <div class="field">
+        <label for="fTitle">Assignment Title</label>
+        <input type="text" id="fTitle" placeholder="e.g. Binary Search Tree Implementation" required>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="fSubject">Subject</label>
+          <input type="text" id="fSubject" placeholder="e.g. Data Structures" required>
+        </div>
+        <div class="field">
+          <label for="fTeacher">Teacher Name</label>
+          <input type="text" id="fTeacher" placeholder="e.g. Mr. Alvarez">
+        </div>
+      </div>
+
+      <div class="field-row">
+        <div class="field">
+          <label for="fDueDate">Due Date</label>
+          <input type="date" id="fDueDate" required>
+        </div>
+        <div class="field">
+          <label for="fPriority">Priority</label>
+          <select id="fPriority">
+            <option value="High">High</option>
+            <option value="Medium" selected>Medium</option>
+            <option value="Low">Low</option>
+          </select>
+        </div>
+      </div>
+
+      <div class="field">
+        <label for="fDescription">Description</label>
+        <textarea id="fDescription" rows="4" placeholder="Notes, instructions, requirements…"></textarea>
+      </div>
+
+      <div class="field">
+        <label for="fAttachment">Attachment <span class="optional-tag">optional</span></label>
+        <div class="file-drop" id="fileDrop">
+          <span id="fileDropText">Click to attach a file (UI only — not uploaded)</span>
+          <input type="file" id="fAttachment" hidden>
+        </div>
+      </div>
+
+      <div class="form-actions">
+        <button type="submit" class="btn btn-primary" id="saveBtn">Save Assignment</button>
+        <button type="button" class="btn btn-ghost" id="clearBtn">Clear</button>
+      </div>
+    </form>
+  </section>
+
+  <!-- ===== ASSIGNMENT LIST VIEW ===== -->
+  <section class="view" id="view-list">
+    <h2 class="section-heading">Assignments</h2>
+
+    <div class="toolbar">
+      <div class="field search-field">
+        <input type="text" id="searchInput" placeholder="Search by title…">
+      </div>
+      <select id="filterSubject"><option value="">All Subjects</option></select>
+      <select id="filterPriority">
+        <option value="">All Priorities</option>
+        <option value="High">High</option>
+        <option value="Medium">Medium</option>
+        <option value="Low">Low</option>
+      </select>
+      <select id="filterStatus">
+        <option value="">All Statuses</option>
+        <option value="Pending">Pending</option>
+        <option value="Completed">Completed</option>
+        <option value="Overdue">Overdue</option>
+      </select>
+      <select id="sortBy">
+        <option value="dueAsc">Due Date ↑</option>
+        <option value="dueDesc">Due Date ↓</option>
+        <option value="priority">Priority</option>
+        <option value="title">Title A–Z</option>
+      </select>
+      <div class="view-toggle">
+        <button class="view-toggle-btn active" data-layout="cards">Cards</button>
+        <button class="view-toggle-btn" data-layout="table">Table</button>
+      </div>
+    </div>
+
+    <div class="card-list" id="assignmentCards"></div>
+
+    <div class="table-wrap" id="assignmentTableWrap" style="display:none;">
+      <table class="assignment-table">
+        <thead>
+          <tr>
+            <th>Title</th><th>Subject</th><th>Due Date</th><th>Days Left</th><th>Priority</th><th>Status</th><th>Actions</th>
+          </tr>
+        </thead>
+        <tbody id="assignmentTableBody"></tbody>
+      </table>
+    </div>
+
+    <p class="empty-note" id="listEmptyNote" style="display:none;">No assignments match. The ledger page is blank here.</p>
+
+    <div class="export-row">
+      <button class="btn btn-ghost" id="exportCsvBtn">Export CSV</button>
+      <button class="btn btn-ghost" id="exportPdfBtn">Export PDF</button>
+    </div>
+  </section>
+
+  <!-- ===== CALENDAR VIEW ===== -->
+  <section class="view" id="view-calendar">
+    <h2 class="section-heading">Calendar</h2>
+    <div class="calendar-head">
+      <button class="cal-nav" id="calPrev">←</button>
+      <h3 id="calMonthLabel"></h3>
+      <button class="cal-nav" id="calNext">→</button>
+    </div>
+    <div class="calendar-grid" id="calendarGrid"></div>
+    <div class="calendar-legend">
+      <span><i class="dot dot-today"></i> Today</span>
+      <span><i class="dot dot-due"></i> Due date</span>
+      <span><i class="dot dot-overdue"></i> Overdue</span>
+    </div>
+    <div class="calendar-day-detail" id="calendarDayDetail"></div>
+  </section>
+
+  <!-- ===== STATISTICS VIEW ===== -->
+  <section class="view" id="view-stats">
+    <h2 class="section-heading">Statistics</h2>
+    <div class="stat-row">
+      <div class="stat-card"><span class="stat-number" id="stTotal">0</span><span class="stat-label">Total</span></div>
+      <div class="stat-card"><span class="stat-number" id="stCompleted">0</span><span class="stat-label">Completed</span></div>
+      <div class="stat-card"><span class="stat-number" id="stPending">0</span><span class="stat-label">Pending</span></div>
+      <div class="stat-card"><span class="stat-number" id="stHighPriority">0</span><span class="stat-label">High Priority</span></div>
+    </div>
+
+    <div class="chart-row">
+      <div class="chart-card">
+        <h3>Completion</h3>
+        <canvas id="completionChart" width="260" height="260"></canvas>
+        <p class="chart-caption"><span id="stPercent">0%</span> complete</p>
+      </div>
+      <div class="chart-card">
+        <h3>By Subject</h3>
+        <div class="bar-chart" id="subjectBarChart"></div>
+      </div>
+      <div class="chart-card">
+        <h3>By Priority</h3>
+        <div class="bar-chart" id="priorityBarChart"></div>
+      </div>
+    </div>
+  </section>
+
+  <!-- ===== REMINDERS VIEW ===== -->
+  <section class="view" id="view-reminders">
+    <h2 class="section-heading">Reminders</h2>
+    <div class="reminder-col" id="reminderOverdue">
+      <h3 class="reminder-heading overdue">🚨 Overdue</h3>
+      <div class="card-list"></div>
+    </div>
+    <div class="reminder-col" id="reminderToday">
+      <h3 class="reminder-heading today">⚠ Due Today</h3>
+      <div class="card-list"></div>
+    </div>
+    <div class="reminder-col" id="reminderTomorrow">
+      <h3 class="reminder-heading tomorrow">⏰ Due Tomorrow</h3>
+      <div class="card-list"></div>
+    </div>
+  </section>
+
+</main>
+
+<!-- Toast -->
+<div class="toast" id="toast"></div>
+
+<!-- Mobile nav overlay -->
+<div class="mobile-nav-overlay" id="mobileNavOverlay"></div>
+
+<script src="js/storage.js"></script>
+<script src="js/dashboard.js"></script>
+<script src="js/filter.js"></script>
+<script src="js/calendar.js"></script>
+<script src="js/app.js"></script>
+</body>
+</html>
